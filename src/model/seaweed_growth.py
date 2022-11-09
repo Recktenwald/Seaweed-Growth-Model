@@ -232,7 +232,7 @@ def salinity_single_value(salinity: float):
         return 1
 
 
-def calculate_salinity_factor(salinity: pd.Series):
+def calculate_salinity_factor(salinity: pd.Series(dtype=float)) -> pd.Series(dtype=float):
     """
     Calculates the salinity factor for a whole dataframe
     Arguments:

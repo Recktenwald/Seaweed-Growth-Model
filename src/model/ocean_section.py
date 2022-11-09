@@ -4,14 +4,61 @@ a section of the ocean. This can be either a large marine ecosystem
 or simply a part of a global grid.
 """
 import pandas as pd
+import numpy as np
+from dataenforce import Dataset
 
-from model import seaweed_growth as sg
+from src.model import seaweed_growth as sg
+
+RawOceanSections = Dataset["name", "salinity", "temperature",  # I would suggest using an ID instad of name
+                           "nitrate", "ammonium", "phosphat", "illumination"]
+
+OceanSections = Dataset[RawOceanSections, "salinity_factor", "nutrient_factor",
+                        "illumination_factor", "temp_factor", "seaweed_growth_rate", "months_since_war"]
+
+
+def calculate_factors(df : RawOceanSections) -> OceanSections:
+    """
+    Calculates the factors and growth rate for the ocean section
+    """
+
+    # First we compute the various factors
+    df["salinity_factor"] = df["salinity"].map(sg.salinity_single_value)
+    df["nutrient_factor"] = np.vectorize(sg.nutrient_single_value)(
+        df["nitrate"], df["ammonium"], df["phosphate"])
+    # Alternatively without numpy
+    # df["nutrient_factor"] = df.apply(
+    #     lambda x: sg.nutrient_single_value(x["nitrate"], x["ammonium"], x["phosphate"]),
+    #     axis=1,
+    # )
+    df["illumination_factor"] = df["illumination"].map(sg.illumination_single_value)
+    df["temp_factor"] = df["temperature"].map(sg.temperature_single_value)
+
+    # Now we compute the growth rate
+    df["seaweed_growth_rate"] = df.apply(
+        lambda x: sg.growth_factor_combination_single_value(
+            x["illumination_factor"],
+            x["temperature_factor"],
+            x["nutrient_factor"],
+            x["salinity_factor"],
+        ),
+        axis=1,
+    )
+
+    # Months since war
+    df["months_since_war"] = df \
+        .groupby("name") \
+        .apply(lambda x: range(-3, x.shape[0] - 3, 1)) \
+        .explode().values
+
+    # Given that the rewrite we don't have a wrapper class anymore, but simply a data frame, I think it makes sense
+    # to not have specific functions for computing the mean or selecting a month.
+    # This can now easily be done directly with pandas.
 
 
 class OceanSection:
     """
     Class the represents a section of the ocean.
-    alculates for every section how quickly seaweed can grow
+    calculates for every section how quickly seaweed can grow
     and also saves the single factors for growth
     """
 
