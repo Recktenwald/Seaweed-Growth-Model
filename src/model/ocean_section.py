@@ -5,7 +5,7 @@ or simply a part of a global grid.
 """
 import pandas as pd
 
-from src.model import seaweed_growth as sg
+from model import seaweed_growth as sg
 
 
 class OceanSection:

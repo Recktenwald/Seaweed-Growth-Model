@@ -3,8 +3,8 @@ Main Interface
 """
 import pandas as pd
 
-from src.model import ocean_section as oc_se
-from src.processing import read_files
+from model import ocean_section as oc_se
+from processing import read_files
 
 
 class SeaweedModel:

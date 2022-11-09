@@ -11,7 +11,7 @@ for which it uses the first function.
 Based on the publication:
 James, S.C. and Boriah, V. (2010), Modeling algae growth
 in an open-channel raceway
-Journal of Computational Biology, 17(7), 895−906.
+Journal of Computational Biology, 17(7), 895-906.
 """
 import math
 
@@ -24,7 +24,7 @@ def growth_factor_combination_single_value(
     temperature_factor: float,
     nutrient_factor: float,
     salinity_factor: float,
-):
+) -> float:
     """
     Calculates the actual production rate of the seaweed
     Arguments:
