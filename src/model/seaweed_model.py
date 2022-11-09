@@ -3,7 +3,7 @@ Main Interface
 """
 import pandas as pd
 
-from model import ocean_section as oc_se
+from src.model import ocean_section as oc_se
 from processing import read_files
 
 
