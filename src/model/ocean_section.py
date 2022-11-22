@@ -5,15 +5,28 @@ or simply a part of a global grid.
 """
 import pandas as pd
 import numpy as np
-from dataenforce import Dataset
+from dataenforce import Dataset, validate
 
 from src.model import seaweed_growth as sg
 
 RawOceanSections = Dataset["name", "salinity", "temperature",  # I would suggest using an ID instad of name
-                           "nitrate", "ammonium", "phosphat", "illumination"]
+                           "nitrate", "ammonium", "phosphate", "illumination"]
 
 OceanSections = Dataset[RawOceanSections, "salinity_factor", "nutrient_factor",
                         "illumination_factor", "temp_factor", "seaweed_growth_rate", "months_since_war"]
+
+
+# This is probably not a good way, but I don't know the dataenforce package that well
+# There is probably a better way to check if something fits the description
+# But this decorator simply makes the function call _fail_ if it does not. So good enough for now.
+@validate
+def is_raw_ocean_section(df: RawOceanSections):
+    return(True)
+
+
+@validate
+def is_ocean_section(df: OceanSections):
+    return(True)
 
 
 def calculate_factors(df : RawOceanSections) -> OceanSections:
@@ -37,7 +50,7 @@ def calculate_factors(df : RawOceanSections) -> OceanSections:
     df["seaweed_growth_rate"] = df.apply(
         lambda x: sg.growth_factor_combination_single_value(
             x["illumination_factor"],
-            x["temperature_factor"],
+            x["temp_factor"],
             x["nutrient_factor"],
             x["salinity_factor"],
         ),
@@ -48,7 +61,11 @@ def calculate_factors(df : RawOceanSections) -> OceanSections:
     df["months_since_war"] = df \
         .groupby("name") \
         .apply(lambda x: range(-3, x.shape[0] - 3, 1)) \
-        .explode().values
+        .explode() \
+        .values \
+        .astype("int64")  # for some reason this is needed to surpress a pandas "future warning" later.
+
+    return(df)
 
     # Given that the rewrite we don't have a wrapper class anymore, but simply a data frame, I think it makes sense
     # to not have specific functions for computing the mean or selecting a month.
